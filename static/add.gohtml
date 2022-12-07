@@ -1,0 +1,8 @@
+{{define "body"}}
+<h1>Add Todos</h1>
+<form method="POST" action="/add">
+    <label>Item</label><input name="item" type="text" value="" /> <br />
+    <label>Completed</label><input name="completed" type="checkbox" value="true" /> <br />
+    <input type="submit" value="submit" />
+</form>
+{{ end }}
