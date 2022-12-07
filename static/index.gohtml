@@ -1,0 +1,21 @@
+{{define "body"}}
+<h1>Todos</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Completed</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range $index, $value := . }}
+        <tr>
+            <td>{{ $value.item }}</td>
+            <td>{{ $value.completed }}</td>
+        </tr>
+        {{
+            end
+        }}
+    </tbody>
+</table>
+{{ end }}
