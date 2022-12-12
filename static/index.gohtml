@@ -11,11 +11,45 @@
         {{range $index, $value := . }}
         <tr>
             <td>{{ $value.item }}</td>
-            <td><input type="checkbox" {{ if $value.completed }} checked {{end}} /></td>
+            <td>
+                <input
+                    type="checkbox"
+                    {{if
+                    $value.completed}}
+                    checked
+                    {{end}}
+                    id="{{ $value._id }}"
+                    value="true"
+                    onchange="checkboxChange(this)"
+                />
+            </td>
         </tr>
         {{
             end
         }}
     </tbody>
 </table>
+<script>
+    function checkboxChange(e) {
+        // Creating Our XMLHttpRequest object
+        var xhr = new XMLHttpRequest();
+        const id = e.id;
+        const fd = new FormData();
+        fd.append("completed", e.checked);
+
+        // Making our connection
+        var url = `http:\/\/127.0.0.1:8080/update/?id=${id}`;
+        xhr.open("PUT", url, true);
+
+        // function execute after request is successful
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+            }
+        };
+
+        // Sending our request
+        xhr.send(fd);
+    }
+</script>
 {{ end }}

@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -43,6 +44,8 @@ func getAllTodos() []interface{} {
 			log.Fatal(err)
 		}
 
+		// Converting ObjectID to string
+		elem["_id"] = elem["_id"].(primitive.ObjectID).Hex()
 		results = append(results, elem)
 	}
 
@@ -58,6 +61,25 @@ func insertTodo(item string, completed bool) {
 	if err != nil {
 		log.Print(err.Error())
 		return
+	}
+}
+
+func updateTodo(id string, completed bool) {
+	client := InitDataLayer()
+	coll := client.Database("todoTraining").Collection("todos")
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		panic(err)
+	}
+	filter := bson.M{"_id": objID}
+	updatedTodo := bson.M{"$set": bson.M{"completed": completed}}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	var updatedDoc bson.D
+	updateErr := coll.FindOneAndUpdate(ctx, filter, updatedTodo, opts).Decode(&updatedDoc)
+	if updateErr != nil {
+		panic(updateErr)
 	}
 }
 
@@ -130,9 +152,30 @@ func addHandler(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func updateHandler(response http.ResponseWriter, request *http.Request) {
+	if request.Method != "PUT" {
+		http.Error(response, "Method is not supported.", http.StatusNotFound)
+		return
+	}
+	id := request.URL.Query().Get("id")
+	completed_form := request.FormValue("completed")
+
+	var completed bool
+	if completed_form == "true" {
+		completed = true
+	} else {
+		completed = false
+	}
+
+	updateTodo(id, completed)
+	fmt.Fprintf(response, "Data updated successfully")
+}
+
 func main() {
+	// updateTodo("63904748dd329820084c0545", true)
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/add", addHandler)
+	http.HandleFunc("/update/", updateHandler)
 
 	fmt.Printf("Starting server at port 8080\n")
 
