@@ -13,6 +13,7 @@
             <td>{{ $value.item }}</td>
             <td>
                 <input
+                    class="checkbox_complete"
                     type="checkbox"
                     {{if
                     $value.completed}}
@@ -29,6 +30,7 @@
         }}
     </tbody>
 </table>
+<button type="button" class="btn btn-primary" onclick="completeAll()">Mark All as Completed</button>
 <script>
     function checkboxChange(e) {
         // Creating Our XMLHttpRequest object
@@ -50,6 +52,27 @@
 
         // Sending our request
         xhr.send(fd);
+    }
+
+    function completeAll() {
+        // Creating Our XMLHttpRequest object
+        var xhr = new XMLHttpRequest();
+        var url = `http:\/\/127.0.0.1:8080/updateall`;
+        xhr.open("POST", url, true);
+
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                const checkbox = document.getElementsByClassName("checkbox_complete");
+                const checkbox_arr = [...checkbox];
+                checkbox_arr.forEach((element) => {
+                    element.checked = true;
+                });
+            }
+        };
+
+        // Sending our request
+        xhr.send();
     }
 </script>
 {{ end }}

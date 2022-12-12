@@ -83,6 +83,18 @@ func updateTodo(id string, completed bool) {
 	}
 }
 
+func updateAllTodo() {
+	client := InitDataLayer()
+	coll := client.Database("todoTraining").Collection("todos")
+
+	filter := bson.M{}
+	update := bson.M{"$set": bson.M{"completed": true}}
+	_, err := coll.UpdateMany(context.TODO(), filter, update)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func indexHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		http.Error(response, "Method is not supported.", http.StatusNotFound)
@@ -171,11 +183,22 @@ func updateHandler(response http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(response, "Data updated successfully")
 }
 
+func updateAllHandler(response http.ResponseWriter, request *http.Request) {
+	if request.Method != "POST" {
+		http.Error(response, "Method is not supported.", http.StatusNotFound)
+		return
+	}
+
+	updateAllTodo()
+	fmt.Fprintf(response, "Data updated successfully")
+}
+
 func main() {
 	// updateTodo("63904748dd329820084c0545", true)
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/add", addHandler)
 	http.HandleFunc("/update/", updateHandler)
+	http.HandleFunc("/updateall", updateAllHandler)
 
 	fmt.Printf("Starting server at port 8080\n")
 
