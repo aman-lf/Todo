@@ -95,6 +95,22 @@ func updateAllTodo() {
 	}
 }
 
+func deleteTodo(id string) {
+	client := InitDataLayer()
+	coll := client.Database("todoTraining").Collection("todos")
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		panic(err)
+	}
+	filter := bson.M{"_id": objID}
+
+	_, delete_err := coll.DeleteOne(ctx, filter)
+	if delete_err != nil {
+		panic(delete_err)
+	}
+}
+
 func indexHandler(response http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		http.Error(response, "Method is not supported.", http.StatusNotFound)
@@ -193,12 +209,24 @@ func updateAllHandler(response http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(response, "Data updated successfully")
 }
 
+func deleteHandler(response http.ResponseWriter, request *http.Request) {
+	if request.Method != "DELETE" {
+		http.Error(response, "Method is not supported.", http.StatusNotFound)
+		return
+	}
+	id := request.URL.Query().Get("id")
+
+	deleteTodo(id)
+	fmt.Fprintf(response, "Data updated successfully")
+}
+
 func main() {
 	// updateTodo("63904748dd329820084c0545", true)
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/add", addHandler)
 	http.HandleFunc("/update/", updateHandler)
 	http.HandleFunc("/updateall", updateAllHandler)
+	http.HandleFunc("/delete/", deleteHandler)
 
 	fmt.Printf("Starting server at port 8080\n")
 

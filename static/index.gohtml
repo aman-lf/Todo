@@ -9,20 +9,26 @@
     </thead>
     <tbody>
         {{range $index, $value := . }}
-        <tr>
+        <tr id="{{ $value._id }}">
             <td>{{ $value.item }}</td>
             <td>
                 <input
-                    class="checkbox_complete"
+                    class="checkbox_complete me-3"
                     type="checkbox"
                     {{if
                     $value.completed}}
                     checked
                     {{end}}
-                    id="{{ $value._id }}"
+                    data-todo_id="{{ $value._id }}"
                     value="true"
                     onchange="checkboxChange(this)"
                 />
+                <button
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="deleteItem('{{ $value._id }}')"
+                >
+                    Delete
+                </button>
             </td>
         </tr>
         {{
@@ -32,12 +38,13 @@
 </table>
 <button type="button" class="btn btn-primary" onclick="completeAll()">Mark All as Completed</button>
 <script>
-    function checkboxChange(e) {
+    function checkboxChange(element) {
+        const id = element.getAttribute("data-todo_id");
+
         // Creating Our XMLHttpRequest object
         var xhr = new XMLHttpRequest();
-        const id = e.id;
         const fd = new FormData();
-        fd.append("completed", e.checked);
+        fd.append("completed", element.checked);
 
         // Making our connection
         var url = `http:\/\/127.0.0.1:8080/update/?id=${id}`;
@@ -68,6 +75,25 @@
                 checkbox_arr.forEach((element) => {
                     element.checked = true;
                 });
+            }
+        };
+
+        // Sending our request
+        xhr.send();
+    }
+
+    function deleteItem(id) {
+        if (!confirm("Delete this Item?")) return;
+
+        var xhr = new XMLHttpRequest();
+        var url = `http:\/\/127.0.0.1:8080/delete/?id=${id}`;
+        xhr.open("DELETE", url, true);
+
+        // function execute after request is successful
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                document.getElementById(id).remove();
             }
         };
 
