@@ -38,25 +38,24 @@ func GetAllTodos() []interface{} {
 	return results
 }
 
-func CreateTodo(item string, completed bool) {
+func CreateTodo(item string, completed bool) error {
 	var Todo = db.Database.Collection("todos")
 	var ctx, _ = context.WithTimeout(context.Background(), 3*time.Second)
 
 	todo := bson.D{{"item", item}, {"completed", completed}}
 	_, err := Todo.InsertOne(ctx, todo)
-	if err != nil {
-		log.Print(err.Error())
-		return
-	}
+
+	return err
+
 }
 
-func UpdateTodo(id string, completed bool) {
+func UpdateTodo(id string, completed bool) error {
 	var Todo = db.Database.Collection("todos")
 	var ctx, _ = context.WithTimeout(context.Background(), 3*time.Second)
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	filter := bson.M{"_id": objID}
 	updatedTodo := bson.M{"$set": bson.M{"completed": completed}}
@@ -64,35 +63,32 @@ func UpdateTodo(id string, completed bool) {
 
 	var updatedDoc bson.D
 	updateErr := Todo.FindOneAndUpdate(ctx, filter, updatedTodo, opts).Decode(&updatedDoc)
-	if updateErr != nil {
-		panic(updateErr)
-	}
+
+	return updateErr
 }
 
-func UpdateAllTodo() {
+func UpdateAllTodo() error {
 	var Todo = db.Database.Collection("todos")
 	var ctx, _ = context.WithTimeout(context.Background(), 3*time.Second)
 
 	filter := bson.M{}
 	update := bson.M{"$set": bson.M{"completed": true}}
 	_, err := Todo.UpdateMany(ctx, filter, update)
-	if err != nil {
-		panic(err)
-	}
+
+	return err
 }
 
-func DeleteTodo(id string) {
+func DeleteTodo(id string) error {
 	var Todo = db.Database.Collection("todos")
 	var ctx, _ = context.WithTimeout(context.Background(), 3*time.Second)
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	filter := bson.M{"_id": objID}
 
 	_, delete_err := Todo.DeleteOne(ctx, filter)
-	if delete_err != nil {
-		panic(delete_err)
-	}
+
+	return delete_err
 }

@@ -73,7 +73,11 @@ func CreateTodo(response http.ResponseWriter, request *http.Request) {
 			completed = false
 		}
 
-		models.CreateTodo(item, completed)
+		err := models.CreateTodo(item, completed)
+		if err != nil {
+			log.Print(err.Error())
+			http.Error(response, "Internal Server Error", 500)
+		}
 		fmt.Fprintf(response, "Data inserted successfully")
 	}
 }
@@ -93,7 +97,12 @@ func UpdateTodo(response http.ResponseWriter, request *http.Request) {
 		completed = false
 	}
 
-	models.UpdateTodo(id, completed)
+	err := models.UpdateTodo(id, completed)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(response, "Internal Server Error", 500)
+	}
+
 	fmt.Fprintf(response, "Data updated successfully")
 }
 
@@ -103,7 +112,11 @@ func UpdateAllTodo(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	models.UpdateAllTodo()
+	err := models.UpdateAllTodo()
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(response, "Internal Server Error", 500)
+	}
 	fmt.Fprintf(response, "Data updated successfully")
 }
 
@@ -114,6 +127,10 @@ func DeleteTodo(response http.ResponseWriter, request *http.Request) {
 	}
 	id := request.URL.Query().Get("id")
 
-	models.DeleteTodo(id)
+	err := models.DeleteTodo(id)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(response, "Internal Server Error", 500)
+	}
 	fmt.Fprintf(response, "Data deleted successfully")
 }
